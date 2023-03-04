@@ -10,7 +10,7 @@ const datetime=new Date();
     }
 }
 
- const success=(message,token)=>{
+ const success=(message,token,screen=null)=>{
 
     const successRes={
         message:message,
@@ -19,7 +19,22 @@ const datetime=new Date();
         status:200 
     }
     successRes.token=token;
+    if(message.includes("Successfully logged in")){
+        successRes.screen=screen;
+    }
     return successRes
 }
 
-module.exports ={error,success}
+const contentsuccess=(message,videoDetails)=>{
+
+    const successRes={
+        message:message,
+        status:true,
+        timestamp: datetime.toLocaleString(),
+        status:200,
+        videoDetails:videoDetails
+    }
+   
+    return successRes}
+
+module.exports ={error,success,contentsuccess}

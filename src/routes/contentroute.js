@@ -2,7 +2,7 @@
 const express = require('express')
 var app = express();
 app.use(express.json());
-const {error,success}=require('../utils/Constants')
+const {error,success, contentsuccess}=require('../utils/Constants')
 const mongoose = require('mongoose')
 const contentrouter = express.Router();
 const Contents = require('../models/Content');
@@ -23,8 +23,22 @@ contentrouter.post("/upload", async (req, res) => {
       const permanentLink='https://gdurl.com'+shortlink;
       const videos = new Contents({ videolink:permanentLink, thumbnail, title })
 
+    //       try {
+    //   await page.waitForSelector('#created input[type="url"]', { timeout: 60000 });
+    //   const urlInputElement = await page.$('#created input[type="url"]');
+    //   if (!urlInputElement) {
+    //     console.error('Could not find the URL input element.');
+    //     // Add code here to handle the error.
+    //   } else {
+    //     // Add code here to interact with the URL input element.
+    //   }
+    // } catch (error) {
+    //   console.error('Error waiting for URL input element:', error);
+    //   // Add code here to handle the error.
+    // }
+
       await videos.save();
-      res.status(200).send(success({ "msg": "Video saved successfully"},{ videolink:shortlink, thumbnail, title }))
+      res.status(200).send(contentsuccess("Video saved successfully",{ videolink:permanentLink, thumbnail, title }))
     } catch (err) {
       if(err.keyValue){
         res.status(400).send(error({ "msg": Object.keys(err.keyValue) + " is invalid"}))

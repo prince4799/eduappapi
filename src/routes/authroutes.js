@@ -36,7 +36,7 @@ router.post("/signup", async (req, res) => {
 })
 
 
-router.post("/signin", async (req, res) => {
+/*router.post("/signin", async (req, res) => {
   const { userid, password } = req.body
   console.log("request body", req.body);
   var value = {}
@@ -51,9 +51,10 @@ router.post("/signin", async (req, res) => {
     user.map((item, index) => {
       if (item.username == req.body.userid || item.email == req.body.userid) {
         value = item;
+        return res.status(401).send(error("User is not registered"))
       }
+      // console.log("->->->->->->", value,user);
     })
-    console.log("->->->->->->", value, typeof (value));
     if (!value) {
       console.log("User is not registered");
       return res.status(401).send(error("User is not registered"))
@@ -63,8 +64,16 @@ router.post("/signin", async (req, res) => {
     }
     else {
       try {
+        value={
+          email: 'qwertyui@mail.com',
+          password: '$2b$10$9nV6w.hstky0/xCfdTl7Qe1/.YzT7P/sEw5RFPQ9Ekz0vEwy/rki2',
+          username: 'PriVer',
+          contact: 1234567,
+          userType: 'Public',
+          paid: 'demo',
+        }
         await value.comparePassword(password)
-        const token = jwt.sign({ userID: user._id }, jwtKey)
+        const token = jwt.sign({ userID: value._id }, jwtKey)
         let screenName = ''
         if (value.userType == 'Admin') {
           screenName = 'Admin'
@@ -83,7 +92,47 @@ router.post("/signin", async (req, res) => {
 
 
 
+})*/
+
+router.post("/signin", async (req, res) => {
+  const { userid, password } = req.body
+  console.log("request body", req.body);
+
+  if (!userid || !password) {
+    return res.status(401).send(error('Password or Email/Username is missing.'));
+  }
+
+  try {
+    const user = await User.findOne({ $or: [{ username: userid }, { email: userid }] })
+    if (!user) {
+      console.log("User is not registered");
+      return res.status(401).send(error("User is not registered"))
+    }
+
+    if (!user.password) {
+      return res.status(401).send(error("Password is missing."))
+    }
+
+    const passwordMatch = await user.comparePassword(password, user.password)
+    if (!passwordMatch) {
+      return res.status(401).send(error('Password or Email/ Username not matched.'))
+    }
+
+    const token = jwt.sign({ userID: user._id }, jwtKey)
+    let screenName = ''
+    if (user.userType == 'Admin') {
+      screenName = 'Admin'
+    }
+    else {
+      screenName = 'Public'
+    }
+    res.status(200).send( success('Successfully logged in',token,screenName))
+  } catch (err) {
+    console.log(err);
+    return res.status(401).send(error("Password or Email/ Username not matched. "))
+  }
 })
+
 
 router.post("/google", passport.authenticate('google', {
   scope: ['profile']
