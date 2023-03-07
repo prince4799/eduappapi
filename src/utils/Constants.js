@@ -32,7 +32,7 @@ const contentsuccess=(message,videoDetails)=>{
         status:true,
         timestamp: datetime.toLocaleString(),
         status:200,
-        videoDetails:videoDetails
+        details:videoDetails
     }
    
     return successRes}
