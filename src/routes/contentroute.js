@@ -8,11 +8,7 @@ const contentrouter = express.Router();
 const Contents = require('../models/Content');
 const jwtAuth = require('../middleware/authkeys')
 const createPermanentLink = require('../scrapper/scripterfornode')
-// jwtAuth,(req, res)
-
 mongoose.model('Contents')
-
-
 
 contentrouter.post("/upload", async (req, res) => {
   const expectedKeys = ["title", "videolink", "thumbnail", "category"];
@@ -22,14 +18,10 @@ contentrouter.post("/upload", async (req, res) => {
     return res.status(401).send(error("Invalid fields."))
   }
   const { videolink, thumbnail, title, category } = req.body;
-  console.log("upload", req.body)
-
-
+  // console.log("upload", req.body)
   var lengthofbody = validlength(videolink) + validlength(title) + validlength(thumbnail) + validlength(category)
-
   if (!req.body || lengthofbody < 4 || !validlength(videolink) || !validlength(title) || !validlength(thumbnail) || !validlength(category)) {
     return res.status(401).send(error("unable to generate link as fields are empty"))
-
   }
 
   try {
@@ -100,6 +92,7 @@ contentrouter.get("/load/search/:name", jwtAuth, async (req, res) => {
     res.status(500).send(error("Server error"))
   }
 })
+
 contentrouter.put("/update", jwtAuth,async (req, res) => {
   const expectedKeys = ["title", "videolink", "thumbnail", "category", "newtitle"];
   const bodyKeys = Object.keys(req.body);
@@ -154,9 +147,14 @@ contentrouter.put("/update", jwtAuth,async (req, res) => {
 
 contentrouter.delete("/delete",jwtAuth, async (req, res) => {
   const title = req.body.title;
+  const expectedKeys=["title"]
+  const bodyKeys=Object.keys(req.body)
+  if(expectedKeys.length!=bodyKeys.length || !validlength(title) || !req.body){
+    return res.status(404).send(error("Invalid input."));
+  }
   try {
-    const deletedVideo = await Contents.deleteOne(req.body);
-    if (!deletedVideo) {
+    const deletedVideo = await Contents.deleteOne(req.body).exec();
+    if (deletedVideo.deletedCount === 0) {
       return res.status(404).send(error("Video not found."));
     }
     res.status(200).send(success("Video deleted successfully."));
@@ -167,7 +165,3 @@ contentrouter.delete("/delete",jwtAuth, async (req, res) => {
 });
 
 module.exports = contentrouter
-
-
-
-

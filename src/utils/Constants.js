@@ -6,7 +6,7 @@ const error = (message = '') => {
         message: message,
         status: false,
         timestamp: datetime.toLocaleString(),
-        status: 401
+        statuscode: 401
     }
 }
 
@@ -16,7 +16,7 @@ const success = (message, token, screen = null) => {
         message: message,
         status: true,
         timestamp: datetime.toLocaleString(),
-        status: 200
+        statuscode: 200
     }
     successRes.token = token;
     if (message.includes("Successfully logged in")) {
@@ -31,7 +31,7 @@ const contentsuccess = (message, videoDetails) => {
         message: message,
         status: true,
         timestamp: datetime.toLocaleString(),
-        status: 200,
+        statuscode: 200,
         details: videoDetails
     }
 
@@ -39,7 +39,8 @@ const contentsuccess = (message, videoDetails) => {
 }
 
 const validlength = (param) => {
-    return param.replace(/\s/g, '').length
+    const validString=param+' '
+    return validString.replace(/\s/g, '').length
 }
 
 module.exports = { error, success, contentsuccess, validlength }

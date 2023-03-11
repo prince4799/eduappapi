@@ -3,7 +3,7 @@ const express = require('express')
 var app = express();
 app.use(express.json());
 const categoryrouter = express.Router();
-const { error, success, contentsuccess } = require('../utils/Constants')
+const { error, success, contentsuccess, validlength } = require('../utils/Constants')
 const jwtAuth = require('../middleware/authkeys')
 const mongoose = require('mongoose')
 const Category = require('../models/Categories');
@@ -11,20 +11,24 @@ const CategoryModel = mongoose.model('Category')
 
 
 categoryrouter.post("/add", async (req, res) => {
-
+    const expectedKeys = ["category"]
+    const bodyKeys = Object.keys(req.body)
+    if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("category")) {
+        return res.status(401).send(error("Invalid fields."))
+    }
     const category = req.body.category
 
-    if (!category) {
-        return res.status(401).send(error("Invalid Field", lengthofbody))
+    if (!category || !validlength(category)) {
+        return res.status(401).send(error("Invalid category."))
 
     }
 
-    var lengthofbody = category.replace(/\s/g, '').length
-    console.log("lengthofbody", lengthofbody)
+    // var lengthofbody = category.replace(/\s/g, '').length
+    // console.log("lengthofbody", lengthofbody)
 
-    if (!req.body || !lengthofbody) {
-        return res.status(401).send(error("Category can't be empty.", lengthofbody))
-    }
+    // if (!req.body || !lengthofbody) {
+    //     return res.status(401).send(error("Category can't be empty.", lengthofbody))
+    // }
 
     try {
 
@@ -47,7 +51,6 @@ categoryrouter.post("/add", async (req, res) => {
 
 })
 
-
 categoryrouter.get("/getlist", jwtAuth, async (req, res) => {
     try {
         const list = await CategoryModel.find({});
@@ -61,7 +64,6 @@ categoryrouter.get("/getlist", jwtAuth, async (req, res) => {
     }
 })
 
-
 categoryrouter.post("/updatelist", jwtAuth, async (req, res) => {
     const { category, oldcategory } = req.body;
     if (!category || !oldcategory) {
@@ -70,8 +72,8 @@ categoryrouter.post("/updatelist", jwtAuth, async (req, res) => {
 
     try {
         const updatedCategory = await CategoryModel.findOneAndUpdate(
-            { category: oldcategory },
-            { category }
+            { category },
+            { category: oldcategory }
         );
 
         if (updatedCategory) {
@@ -84,6 +86,19 @@ categoryrouter.post("/updatelist", jwtAuth, async (req, res) => {
         return res.status(500).send(error("Error updating list."));
     }
 });
-
+ 
+categoryrouter.delete("/delete", jwtAuth, async (req, res) => {
+    const category = req.body.category
+    try {
+        const deletedCategory = await CategoryModel.deleteOne(req.body).exec();
+        if (deletedCategory.deletedCount === 0) {
+            return res.status(404).send(error("Category not found."));
+        }
+        res.status(200).send(success("Category deleted successfully."));
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(error("Internal server error."));
+    }
+});
 
 module.exports = categoryrouter
