@@ -13,10 +13,12 @@ require('./src/models/User')
 const jwtAuth=require('./src/middleware/authkeys')
 const router=require('./src/routes/authroutes');
 const contentrouter=require('./src/routes/contentroute')
+const categoryrouter= require('./src/routes/categoryRoute')
 // const linkrouter=require("./scrapper")
 app.use(bodyParser.json())
 app.use("/contents",contentrouter)
 app.use("/auth",router)
+app.use('/category',categoryrouter)
 // app.use(linkrouter)
 
 

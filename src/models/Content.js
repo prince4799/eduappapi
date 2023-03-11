@@ -6,7 +6,7 @@ const Content = new Schema({
     videolink: {
         type: String,
         unique: true,
-        // required: [true, "Please enter the link"],
+        required: [true, "Please enter the link"],
     },
     thumbnail: {
         type: String,
@@ -16,9 +16,15 @@ const Content = new Schema({
     },
     title: {
         type: String,
+        unique: [true, "Please enter different title."],
+        required: [true, "Please enter title."],
+    },
+    category: {
+        type: String,
         unique: false,
         // required: [true, "Please enter title."],
     }
+
 
 })
 mongoose.set('strictQuery', true);

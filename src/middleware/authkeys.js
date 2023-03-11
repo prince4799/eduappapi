@@ -4,6 +4,7 @@ const { jwtKey } = require('../confidential/jwtKey')
 const User = mongoose.model('User')
 // const Videos=mongoose.model('Contents')
 const ObjectId = mongoose.Types.ObjectId;
+const JWT_ALGORITHM = 'HS256'
 
 module.exports = (req, res, next) => {
     const { authorization } = req.headers
@@ -11,7 +12,7 @@ module.exports = (req, res, next) => {
         return res.status(401).send("You must be logged in.")
     }
     const token = authorization.replace("Bearer", "");
-    jwt.verify(token, jwtKey, (err, user) => {
+    jwt.verify(token, jwtKey, { algorithms: [JWT_ALGORITHM] },(err, user) => {
         if (err) {
           return res.sendStatus(403);
         }

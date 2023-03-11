@@ -1,25 +1,46 @@
-const datetime=new Date();
+const datetime = new Date();
 
-  const error=(message='')=>{
+const error = (message = '') => {
 
-    return{
-        message:message,
-        status:false,
+    return {
+        message: message,
+        status: false,
         timestamp: datetime.toLocaleString(),
-        status:401
+        statuscode: 401
     }
 }
 
- const success=(message,token)=>{
+const success = (message, token, screen = null) => {
 
-    const successRes={
-        message:message,
-        status:true,
+    const successRes = {
+        message: message,
+        status: true,
         timestamp: datetime.toLocaleString(),
-        status:200 
+        statuscode: 200
     }
-    successRes.token=token;
+    successRes.token = token;
+    if (message.includes("Successfully logged in")) {
+        successRes.screen = screen;
+    }
     return successRes
 }
 
-module.exports ={error,success}
+const contentsuccess = (message, videoDetails) => {
+
+    const successRes = {
+        message: message,
+        status: true,
+        timestamp: datetime.toLocaleString(),
+        statuscode: 200,
+        details: videoDetails
+    }
+
+    return successRes
+}
+
+const validlength = (param) => {
+    const validString=param+' '
+    return validString.replace(/\s/g, '').length
+}
+
+module.exports = { error, success, contentsuccess, validlength }
