@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const { jwtKey } = require('../confidential/jwtKey')
-const User = mongoose.model('User')
+// const User = mongoose.model('User')
 // const Videos=mongoose.model('Contents')
-const ObjectId = mongoose.Types.ObjectId;
+// const ObjectId = mongoose.Types.ObjectId;
 const JWT_ALGORITHM = 'HS256'
 
 module.exports = (req, res, next) => {

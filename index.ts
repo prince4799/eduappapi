@@ -10,15 +10,18 @@ app.use(express.json());
 const {mongoUrl}=require("./src/confidential/mongoKey")
 
 require('./src/models/User')
+require('./src/models/Admin')
 const jwtAuth=require('./src/middleware/authkeys')
 const router=require('./src/routes/authroutes');
 const contentrouter=require('./src/routes/contentroute')
 const categoryrouter= require('./src/routes/categoryRoute')
+const adminrouter=require('./src/routes/adminroute')
 // const linkrouter=require("./scrapper")
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: '100kb' }))
 app.use("/contents",contentrouter)
 app.use("/auth",router)
 app.use('/category',categoryrouter)
+app.use('/admin',adminrouter)
 // app.use(linkrouter)
 
 
@@ -40,15 +43,12 @@ mongoose.connection.on('connected',()=>{
   console.log("You are now connected to mongo");
   
 })
-
 mongoose.connection.on('error',(err)=>{
   console.log("not connected to the mongo",err);
   
 })
-
 app.post('/', jwtAuth,(req, res,next) => {
     res.status(200).send("You get that"+req.body.msg)
-    // return next();
   })
 
   

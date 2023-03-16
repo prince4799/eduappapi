@@ -10,7 +10,7 @@ const Category = require('../models/Categories');
 const CategoryModel = mongoose.model('Category')
 
 
-categoryrouter.post("/add", async (req, res) => {
+categoryrouter.post("/add",jwtAuth, async (req, res) => {
     const expectedKeys = ["category"]
     const bodyKeys = Object.keys(req.body)
     if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("category")) {

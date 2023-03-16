@@ -43,4 +43,18 @@ const validlength = (param) => {
     return validString.replace(/\s/g, '').length
 }
 
-module.exports = { error, success, contentsuccess, validlength }
+/*
+const validlength = (param, min, max) => {
+    const validString = param.trim();
+    const length = validString.length;
+    return length >= min && length <= max;
+  }
+  */
+const multiArgFunc=()=> {
+    // Access all the arguments passed to the function using the 'arguments' object
+    for (var i = 0; i < arguments.length; i++) {
+      console.log("\n",arguments[i]);
+    }
+  }
+
+module.exports = { error, success, contentsuccess, validlength ,multiArgFunc}

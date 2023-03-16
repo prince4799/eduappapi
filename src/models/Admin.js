@@ -2,7 +2,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const {isEmail}= require('validator')
-const UserSchema = new mongoose.Schema({
+const AdminSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
@@ -23,18 +23,7 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         unique: true,
         required: [true, "Please Enter contact no."],
-    },
-    userType: {
-        type: String,
-        unique: false,
-        required: false,
-        default:'Public'
-    },
-    paid: {
-        type: String,
-        unique: false,
-        required: false,
-        default:'demo'  //live for paid only
+        // validate:[{validator: isMobilePhone, msg: "Please Enter valid mobile no."}, "Please Enter valid mobile no."]
     },
     token:{
         type :String,
@@ -43,13 +32,12 @@ const UserSchema = new mongoose.Schema({
         default:null,
     }})
 mongoose.set('strictQuery', true);
-UserSchema.pre('save', function (next) {
-    var user = this;
+AdminSchema.pre('save', function (next) {
+    var admin = this;
 
     // only hash the password if it has been modified (or is new)
-    if (!user.isModified('password')) {
+    if (!admin.isModified('password')) {
         return next();
-
     }
 
     // generate a salt
@@ -58,18 +46,19 @@ UserSchema.pre('save', function (next) {
             return next(err);
         }
         // hash the password using our new salt
-        bcrypt.hash(user.password, salt, function (err, hash) {
+        bcrypt.hash(admin.password, salt, function (err, hash) {
             if (err) {
                 return next(err);
             }
             // override the cleartext password with the hashed one
-            user.password = hash;
+            admin.password = hash;
             next();
         }) }) })
-UserSchema.methods.comparePassword = function (candidatePassword) {
-    const user = this;
+
+AdminSchema.methods.comparePassword = function (candidatePassword) {
+    const admin = this;
     return new Promise((resolve, reject) => {
-        bcrypt.compare(candidatePassword, user.password, (err, isMatch) => {
+        bcrypt.compare(candidatePassword, admin.password, (err, isMatch) => {
             if (err || !isMatch)
                 return reject(err);
             resolve(isMatch);
@@ -78,4 +67,4 @@ UserSchema.methods.comparePassword = function (candidatePassword) {
 };
 
 
-mongoose.model('User', UserSchema)
+mongoose.model('Admin', AdminSchema)

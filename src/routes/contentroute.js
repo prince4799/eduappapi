@@ -10,9 +10,15 @@ const jwtAuth = require('../middleware/authkeys')
 const createPermanentLink = require('../scrapper/scripterfornode')
 mongoose.model('Contents')
 
-contentrouter.post("/upload", async (req, res) => {
+contentrouter.post("/upload",jwtAuth, async (req, res) => {
   const expectedKeys = ["title", "videolink", "thumbnail", "category"];
   const bodyKeys = Object.keys(req.body);
+
+  //crated my secret key to check if valid user can access my data base
+  const secretKey = req.headers["x-secret-key"];
+  if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+    return res.status(401).send(error("Unauthorized."));
+  }
 
   if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("title") || !bodyKeys.includes("videolink") || !bodyKeys.includes("thumbnail") || !bodyKeys.includes("category")) {
     return res.status(401).send(error("Invalid fields."))
