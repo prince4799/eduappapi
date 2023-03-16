@@ -26,8 +26,6 @@ router.post("/signup",requestlimiter,jsonLimiter,validateRequestBodySize, async 
   if (bodyKeys.length != expectedKeys.length || !validlength(username) || !validlength(password) || !validlength(email) || !validlength(contact)) {
     return res.status(401).send(error("Invalid Fields"))
   }
-  // console.log("signup", req.body)
-
   try {
     const user = new User({ email, password, username, contact })
     const tokenKey = jwt.sign({ userID: user._id }, jwtKey)
