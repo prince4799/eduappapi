@@ -10,7 +10,7 @@ const Category = require('../models/Categories');
 const Admin = mongoose.model('Admin')
 const CategoryModel = mongoose.model('Category')
 const User = mongoose.model('User');
-
+const headerSecretKey = process.env.HEADER_SECRET_KEY;
 const { jsonLimiter, validateRequestBodySize } = require('../middleware/jsonLimiter');
 const requestlimiter = require("../middleware/requestLimiter");
 
@@ -18,9 +18,9 @@ const requestlimiter = require("../middleware/requestLimiter");
 
 categoryrouter.post("/add", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
-  
+
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
         return res.status(401).send(error("Unauthorized."));
     }
 
@@ -93,7 +93,7 @@ categoryrouter.get("/getlist", requestlimiter, jwtAuth, jsonLimiter, validateReq
 categoryrouter.post("/updatelist", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
         return res.status(401).send(error("Unauthorized."));
     }
 
@@ -128,7 +128,7 @@ categoryrouter.post("/updatelist", requestlimiter, jwtAuth, jsonLimiter, validat
 categoryrouter.delete("/delete", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
         return res.status(401).send(error("Unauthorized."));
     }

@@ -8,14 +8,14 @@ const AdminSchema = new mongoose.Schema({
         unique: true,
         required: [true, "Please Enter Email"],
         validate:[isEmail,"Please Enter valid Email."],
-        minlength: [4, "Email is invalid."],
+        minlength: [5, "Email is invalid."],
         maxlength: 50,
     },
     password: {
         type: String,
         unique: false,
         required: true,
-        minlength: [8, "Password Length must be 6 minimum."],
+        minlength: [8, "Password Length must be 8 minimum."],
     },
     username: {
         type: String,

@@ -1,5 +1,5 @@
 const datetime = new Date();
-
+const myRegex = /^[a-zA-Z0-9!#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{6,10}$/;
 const error = (message = '') => {
 
     return {
@@ -39,7 +39,9 @@ const contentsuccess = (message, videoDetails) => {
 }
 
 const validlength = (param) => {
-    if(param.length>25|| myRegex.test(param) ){
+    // if(param.length>25|| myRegex.test(param) ){
+    if(param.length>25){
+
         return 0
     }
     const validString=param+' '
