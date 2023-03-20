@@ -39,9 +39,21 @@ const contentsuccess = (message, videoDetails) => {
 }
 
 const validlength = (param) => {
+    if(param.length>25|| myRegex.test(param) ){
+        return 0
+    }
     const validString=param+' '
     return validString.replace(/\s/g, '').length
 }
+
+// const mcuValidator=(param)=>{
+// const myRegex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{6,10}$/;
+
+// if (myRegex.test(param)) {
+
+// }
+
+// }
 
 /*
 const validlength = (param, min, max) => {

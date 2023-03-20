@@ -7,23 +7,30 @@ const AdminSchema = new mongoose.Schema({
         type: String,
         unique: true,
         required: [true, "Please Enter Email"],
-        validate:[isEmail,"Please Enter valid Email."]
+        validate:[isEmail,"Please Enter valid Email."],
+        minlength: [4, "Email is invalid."],
+        maxlength: 50,
     },
     password: {
         type: String,
         unique: false,
         required: true,
+        minlength: [8, "Password Length must be 6 minimum."],
     },
     username: {
         type: String,
         unique: true,
         required: [true, "Please Enter username."],
+        minlength: [6, "Username length must be 6 minimum."],
+        maxlength: 50,
     },
     contact: {
         type: Number,
         unique: true,
         required: [true, "Please Enter contact no."],
         // validate:[{validator: isMobilePhone, msg: "Please Enter valid mobile no."}, "Please Enter valid mobile no."]
+        minlength: [10, "Contact is invalid."],
+        maxlength: 50,
     },
     token:{
         type :String,

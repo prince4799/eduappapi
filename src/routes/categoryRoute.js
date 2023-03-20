@@ -7,10 +7,29 @@ const { error, success, contentsuccess, validlength } = require('../utils/Consta
 const jwtAuth = require('../middleware/authkeys')
 const mongoose = require('mongoose')
 const Category = require('../models/Categories');
+const Admin = mongoose.model('Admin')
 const CategoryModel = mongoose.model('Category')
+const User = mongoose.model('User');
+
+const { jsonLimiter, validateRequestBodySize } = require('../middleware/jsonLimiter');
+const requestlimiter = require("../middleware/requestLimiter");
 
 
-categoryrouter.post("/add",jwtAuth, async (req, res) => {
+
+categoryrouter.post("/add", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+
+  
+    const secretKey = req.headers["x-secret-key"];
+    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+        return res.status(401).send(error("Unauthorized."));
+    }
+
+    const { authorization } = req.headers;
+    const admin = await Admin.findOne({ token: authorization });
+    if (!admin) {
+        return res.status(404).send(error("User not found."));
+    }
+
     const expectedKeys = ["category"]
     const bodyKeys = Object.keys(req.body)
     if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("category")) {
@@ -51,7 +70,14 @@ categoryrouter.post("/add",jwtAuth, async (req, res) => {
 
 })
 
-categoryrouter.get("/getlist", jwtAuth, async (req, res) => {
+categoryrouter.get("/getlist", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+
+    const { authorization } = req.headers;
+    const user = await User.findOne({ token: authorization });
+    if (!user) {
+        return res.status(404).send(error("User not found."));
+    }
+
     try {
         const list = await CategoryModel.find({});
         if (list.length > 0) {
@@ -64,7 +90,19 @@ categoryrouter.get("/getlist", jwtAuth, async (req, res) => {
     }
 })
 
-categoryrouter.post("/updatelist", jwtAuth, async (req, res) => {
+categoryrouter.post("/updatelist", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+
+    const secretKey = req.headers["x-secret-key"];
+    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+        return res.status(401).send(error("Unauthorized."));
+    }
+
+    const { authorization } = req.headers;
+    const admin = await Admin.findOne({ token: authorization });
+    if (!admin) {
+        return res.status(404).send(error("User not found."));
+    }
+
     const { category, oldcategory } = req.body;
     if (!category || !oldcategory) {
         return res.status(400).send(error("Invalid fields"));
@@ -86,9 +124,33 @@ categoryrouter.post("/updatelist", jwtAuth, async (req, res) => {
         return res.status(500).send(error("Error updating list."));
     }
 });
- 
-categoryrouter.delete("/delete", jwtAuth, async (req, res) => {
+
+categoryrouter.delete("/delete", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+
+    const secretKey = req.headers["x-secret-key"];
+    if (!secretKey || secretKey !== "#heyram@") { //if secret key then only it can be uploaded
+        console.error("Invalid secret key:", secretKey);
+        return res.status(401).send(error("Unauthorized."));
+    }
+
+    const { authorization } = req.headers;
+    const admin = await Admin.findOne({ token: authorization });
+    if (!admin) {
+        return res.status(404).send(error("Admin not found."));
+    }
+
+    const expectedKeys = ["category"]
+    const bodyKeys = Object.keys(req.body)
+    if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("category")) {
+        return res.status(401).send(error("Invalid fields."))
+    }
     const category = req.body.category
+
+    if (!category || !validlength(category)) {
+        return res.status(404).send(error("Invalid category."))
+
+    }
+
     try {
         const deletedCategory = await CategoryModel.deleteOne(req.body).exec();
         if (deletedCategory.deletedCount === 0) {

@@ -176,7 +176,6 @@ router.put('/updateuser',requestlimiter, jwtAuth,jsonLimiter,validateRequestBody
   }
 })
 
-
 router.post('/logout',requestlimiter,jsonLimiter,validateRequestBodySize, (req, res) => {
   // Clear the token from the client-side cookie
   res.clearCookie('token');
