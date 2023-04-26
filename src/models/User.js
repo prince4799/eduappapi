@@ -2,55 +2,55 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const {isEmail}= require('validator')
-// const {isEmail,isMobilePhone}=require('validator')
+const Joi = require('joi');
 
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
-        required: [true, "Please Enter Email"],
-        validate:[isEmail,"Please Enter valid Email."]
+        required: [true, "Please Enter Email."],
+        validate:[isEmail,"Please Enter valid Email."],
+        minlength: [4, "Email is invalid."],
+        maxlength: 50,
     },
     password: {
         type: String,
         unique: false,
         required: true,
-        // minlength: [8, "Password must be minimum 8 characters long."],
-
+        minlength: [8, "Password Length must be 6 minimum."],
     },
     username: {
         type: String,
         unique: true,
         required: [true, "Please Enter username."],
+        minlength: [8, "Username length must be 8 minimum."],
     },
     contact: {
         type: Number,
         unique: true,
         required: [true, "Please Enter contact no."],
-        // validate:[isMobilePhone('en-IN', ),"Pleease Enter valid mobile no."]
-
+        minlength: [10, "Contact is invalid."],
+        maxlength: 50,
     },
     userType: {
         type: String,
         unique: false,
         required: false,
         default:'Public'
-        // validate:[isMobilePhone('en-IN', ),"Pleease Enter valid mobile no."]
     },
     paid: {
         type: String,
         unique: false,
         required: false,
         default:'demo'  //live for paid only
-        // validate:[isMobilePhone('en-IN', ),"Pleease Enter valid mobile no."]
     },
-
-})
+    token:{
+        type :String,
+        unique:true,
+        required:false,
+        default:null,
+    }})
 mongoose.set('strictQuery', true);
-
-
-
-
 UserSchema.pre('save', function (next) {
     var user = this;
 
@@ -74,17 +74,6 @@ UserSchema.pre('save', function (next) {
             user.password = hash;
             next();
         }) }) })
-
-
-        // const user = await User.findOne({ _id: req.user.userId });
-        // if (!user) {
-        //   throw new CustomError.UserNotFound();
-        // }
-        // const isPasswordValid = await user.comparePassword(oldPassword);
-        
-
-
-
 UserSchema.methods.comparePassword = function (candidatePassword) {
     const user = this;
     return new Promise((resolve, reject) => {

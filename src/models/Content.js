@@ -12,7 +12,6 @@ const Content = new Schema({
         type: String,
         unique: false,
         required: true,
-
     },
     title: {
         type: String,

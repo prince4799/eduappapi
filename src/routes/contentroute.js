@@ -8,11 +8,18 @@ const contentrouter = express.Router();
 const Contents = require('../models/Content');
 const jwtAuth = require('../middleware/authkeys')
 const createPermanentLink = require('../scrapper/scripterfornode')
+const headerSecretKey = process.env.HEADER_SECRET_KEY;
 mongoose.model('Contents')
 
-contentrouter.post("/upload", async (req, res) => {
+contentrouter.post("/upload",jwtAuth, async (req, res) => {
   const expectedKeys = ["title", "videolink", "thumbnail", "category"];
   const bodyKeys = Object.keys(req.body);
+
+  //crated my secret key to check if valid user can access my data base
+  const secretKey = req.headers["x-secret-key"];
+  if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
+    return res.status(401).send(error("Unauthorized."));
+  }
 
   if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("title") || !bodyKeys.includes("videolink") || !bodyKeys.includes("thumbnail") || !bodyKeys.includes("category")) {
     return res.status(401).send(error("Invalid fields."))
@@ -94,8 +101,13 @@ contentrouter.get("/load/search/:name", jwtAuth, async (req, res) => {
 })
 
 contentrouter.put("/update", jwtAuth,async (req, res) => {
+  const secretKey = req.headers["x-secret-key"];
+  if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    return res.status(401).send(error("Unauthorized."));
+  }
   const expectedKeys = ["title", "videolink", "thumbnail", "category", "newtitle"];
   const bodyKeys = Object.keys(req.body);
+  
   // if (!expectedKeys.every(key => bodyKeys.includes(key))) {
   //   return res.status(401).send(error("Invalid fields."));
   // }
@@ -146,6 +158,10 @@ contentrouter.put("/update", jwtAuth,async (req, res) => {
 });
 
 contentrouter.delete("/delete",jwtAuth, async (req, res) => {
+  const secretKey = req.headers["x-secret-key"];
+  if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    return res.status(401).send(error("Unauthorized."));
+  }
   const title = req.body.title;
   const expectedKeys=["title"]
   const bodyKeys=Object.keys(req.body)

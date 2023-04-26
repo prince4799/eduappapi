@@ -8,26 +8,29 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const { jwtKey } = require('../confidential/jwtKey')
 const jwtAuth = require('../middleware/authkeys')
+const { jsonLimiter, validateRequestBodySize } = require('../middleware/jsonLimiter');
+const requestlimiter = require("../middleware/requestLimiter");
+
 const router = express.Router();
 const User = mongoose.model('User');
 
 const passportSetup = require('../models/GoogleAuth')
 
+
 const TAG = '/signuproute'
 
-router.post("/signup", async (req, res) => {
+router.post("/signup",requestlimiter,jsonLimiter,validateRequestBodySize, async (req, res) => {
   const bodyKeys = Object.keys(req.body)
   const expectedKeys = ["username", "password", "email", "contact"]
   const { email, password, username, contact } = req.body;
   if (bodyKeys.length != expectedKeys.length || !validlength(username) || !validlength(password) || !validlength(email) || !validlength(contact)) {
     return res.status(401).send(error("Invalid Fields"))
   }
-  // console.log("signup", req.body)
-
   try {
     const user = new User({ email, password, username, contact })
-    await user.save();
     const tokenKey = jwt.sign({ userID: user._id }, jwtKey)
+    user.token = tokenKey
+    await user.save();
     res.status(200).send(success("User saved successfully", tokenKey))
   } catch (err) {
     if (err.keyValue) {
@@ -40,7 +43,8 @@ router.post("/signup", async (req, res) => {
   }
 })
 
-router.post("/signin", async (req, res) => {
+router.post("/signin",requestlimiter,jsonLimiter,validateRequestBodySize, async (req, res) => {
+  console.log(">>>>",req.body);
   const bodyKeys = Object.keys(req.body)
   const expectedKeys = ["userid", "password"]
   if (bodyKeys.length != expectedKeys.length || !validlength(req.body.userid) || !validlength(req.body.password)) {
@@ -66,10 +70,13 @@ router.post("/signin", async (req, res) => {
 
     const passwordMatch = await user.comparePassword(password, user.password)
     if (!passwordMatch) {
+    console.log("error in password maatch");
+
       return res.status(401).send(error('Password or Email/ Username not matched.'))
     }
 
-    const token = jwt.sign({ userID: user._id }, jwtKey)
+    // const token = jwt.sign({ userID: user._id }, jwtKey)
+    const token =user.token
     let screenName = ''
     if (user.userType == 'Admin') {
       screenName = 'Admin'
@@ -79,12 +86,12 @@ router.post("/signin", async (req, res) => {
     }
     res.status(200).send(success('Successfully logged in', token, screenName))
   } catch (err) {
-    console.log(err);
+    console.log("error in catch",err);
     return res.status(401).send(error("Password or Email/ Username not matched. "))
   }
 })
 
-router.delete("/deleteuser", jwtAuth, async (req, res) => {
+router.delete("/deleteuser",requestlimiter, jwtAuth,jsonLimiter,validateRequestBodySize, async (req, res) => {
   const expectedKeys = ["username", "email", "contact"];
   const bodyKeys = Object.keys(req.body);
   if (bodyKeys.length <= expectedKeys.length && !bodyKeys.includes("username")&& !bodyKeys.includes("contact") && !bodyKeys.includes("email")) {
@@ -92,6 +99,13 @@ router.delete("/deleteuser", jwtAuth, async (req, res) => {
   }
 
   const { username, email, contact } = req.body;
+  const { authorization } = req.headers
+  const validToken=await User.findOne({ token: authorization }).lean();
+  console.log("validToken",validToken,'\n',"authorization",authorization);
+
+  if(!validToken|| validToken.token!==authorization){
+    return res.status(401).send(error("Invalid User."));
+  }
 
   try {
     let query = {};
@@ -115,12 +129,57 @@ router.delete("/deleteuser", jwtAuth, async (req, res) => {
     return res.status(500).send(error("Internal server error."));
   }
 });
+router.put('/updateuser',requestlimiter, jwtAuth,jsonLimiter,validateRequestBodySize, async (req, res) => {
+  const expectedKeys = ["username", "email", "contact"];
+  const bodyKeys = Object.keys(req.body);
+  if (!bodyKeys.every(key => expectedKeys.includes(key))) {
+    return res.status(401).send(error("Invalid fields."));
+  }
 
-router.put('/updateuser',jwtAuth,async (res,req)=>{
-  
+  const { username, email, contact } = req.body;
+  const { authorization } = req.headers;
+  const user = await User.findOne({token:authorization});
+
+  if (!user) {
+    return res.status(404).send(error("User not found."));
+  }
+
+  try {
+    let query = {};
+    if (username) {
+      query.username = username;
+      const invalidUpdate = await User.findOne(query).exec();
+      if (invalidUpdate) {
+        return res.status(409).send(error("Username is already taken."));
+      }
+      user.username = username;
+    }
+    if (email) {
+      query.email = email;
+      const invalidUpdate = await User.findOne(query).exec();
+      if (invalidUpdate) {
+        return res.status(409).send(error("Email is already taken."));
+      }
+      user.email = email;
+    }
+    if (contact) {
+      query.contact = contact;
+      const invalidUpdate = await User.findOne(query).exec();
+      if (invalidUpdate) {
+        return res.status(409).send(error("Contact is already taken."));
+      }
+      user.contact = contact;
+    }
+
+     await user.save();
+    res.status(200).send(success("User updated successfully."));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send(error("Internal server error." + err.message));
+  }
 })
 
-router.post('/logout', (req, res) => {
+router.post('/logout',requestlimiter,jsonLimiter,validateRequestBodySize, (req, res) => {
   // Clear the token from the client-side cookie
   res.clearCookie('token');
   res.status(200).send(success('Successfully logged out'));
