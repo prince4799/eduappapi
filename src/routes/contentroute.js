@@ -17,7 +17,7 @@ contentrouter.post("/upload",jwtAuth, async (req, res) => {
 
   //crated my secret key to check if valid user can access my data base
   const secretKey = req.headers["x-secret-key"];
-  if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+  if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
     return res.status(401).send(error("Unauthorized."));
   }
 

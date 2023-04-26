@@ -20,7 +20,7 @@ categoryrouter.post("/add", requestlimiter, jwtAuth, jsonLimiter, validateReques
 
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         return res.status(401).send(error("Unauthorized."));
     }
 
@@ -74,9 +74,9 @@ categoryrouter.get("/getlist", requestlimiter, jwtAuth, jsonLimiter, validateReq
 
     const { authorization } = req.headers;
     const user = await User.findOne({ token: authorization });
-    if (!user) {
-        return res.status(404).send(error("User not found."));
-    }
+    // if (!user) {
+    //     return res.status(404).send(error("User not found."));
+    // }
 
     try {
         const list = await CategoryModel.find({});

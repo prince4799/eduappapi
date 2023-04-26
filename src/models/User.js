@@ -18,14 +18,12 @@ const UserSchema = new mongoose.Schema({
         unique: false,
         required: true,
         minlength: [8, "Password Length must be 6 minimum."],
-        maxlength: 50,
     },
     username: {
         type: String,
         unique: true,
         required: [true, "Please Enter username."],
-        minlength: [6, "Username length must be 6 minimum."],
-        maxlength: 50,
+        minlength: [8, "Username length must be 8 minimum."],
     },
     contact: {
         type: Number,

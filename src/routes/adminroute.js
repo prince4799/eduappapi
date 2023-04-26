@@ -21,9 +21,9 @@ const User = mongoose.model('User');
 const TAG = 'Admin Route js'
 
 adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBodySize, async (req, res) => {
-
+    console.log("request",req.headers)
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
         return res.status(401).send(error("Unauthorized."));
     }
@@ -58,9 +58,9 @@ adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBod
 adminrouter.post('/auth/login', requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
-        return res.status(401).send(error("Unauthorized."));
+        return res.status(401).send(error("Unauthorized User."));
     }
 
 
@@ -165,7 +165,7 @@ adminrouter.put('/auth/updateadmin', requestlimiter, jwtAuth, jsonLimiter, valid
 adminrouter.get('/getalluser', requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
         return res.status(401).send(error("Unauthorized."));
     }

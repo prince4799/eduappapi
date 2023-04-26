@@ -44,6 +44,7 @@ router.post("/signup",requestlimiter,jsonLimiter,validateRequestBodySize, async 
 })
 
 router.post("/signin",requestlimiter,jsonLimiter,validateRequestBodySize, async (req, res) => {
+  console.log(">>>>",req.body);
   const bodyKeys = Object.keys(req.body)
   const expectedKeys = ["userid", "password"]
   if (bodyKeys.length != expectedKeys.length || !validlength(req.body.userid) || !validlength(req.body.password)) {
@@ -69,6 +70,8 @@ router.post("/signin",requestlimiter,jsonLimiter,validateRequestBodySize, async 
 
     const passwordMatch = await user.comparePassword(password, user.password)
     if (!passwordMatch) {
+    console.log("error in password maatch");
+
       return res.status(401).send(error('Password or Email/ Username not matched.'))
     }
 
@@ -83,7 +86,7 @@ router.post("/signin",requestlimiter,jsonLimiter,validateRequestBodySize, async 
     }
     res.status(200).send(success('Successfully logged in', token, screenName))
   } catch (err) {
-    console.log(err);
+    console.log("error in catch",err);
     return res.status(401).send(error("Password or Email/ Username not matched. "))
   }
 })
