@@ -35,6 +35,8 @@ mongoose.connect(mongoUrl,{
   useUnifiedTopology: true,
   useNewUrlParser: true,
   // useCreateIndex: true, //make this true
+   connectTimeoutMS: 0, // 30 seconds
+  socketTimeoutMS: 0, // 30 seconds
   autoIndex: true,})
 
 mongoose.set('strictQuery', false)
