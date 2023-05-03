@@ -55,7 +55,7 @@ adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBod
     }
 })
 
-adminrouter.post('/auth/login', requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+adminrouter.post('/auth/login', requestlimiter,  jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
     if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
