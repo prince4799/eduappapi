@@ -83,7 +83,7 @@ categoryrouter.get("/getlist", requestlimiter, jwtAuth, jsonLimiter, validateReq
         if (list.length > 0) {
             return res.status(200).send(contentsuccess("List loaded successfully", { category: list }));
         }
-        return res.status(401).send('List is empty.');
+        return res.status(204).send(contentsuccess('List is empty.',{ category: {} }));
     } catch (err) {
         console.error("Error:", err);
         return res.status(401).send('Error loading list.');

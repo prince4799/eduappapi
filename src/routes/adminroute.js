@@ -21,7 +21,7 @@ const User = mongoose.model('User');
 const TAG = 'Admin Route js'
 
 adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBodySize, async (req, res) => {
-    console.log("request",req.headers)
+    console.log("request", req.headers)
     const secretKey = req.headers["x-secret-key"];
     if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
@@ -42,9 +42,10 @@ adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBod
     try {
         const admin = new Admin({ email, password, username, contact })
         const tokenKey = jwt.sign({ userID: admin._id }, jwtKey)
+        const screen = 'Admin'
         admin.token = tokenKey
         await admin.save();
-        res.status(201).send(success("Admin Created Successfully", tokenKey))
+        res.status(201).send(success("Admin Created Successfully", tokenKey, { screen: screen }))
     } catch (err) {
         if (err.keyValue) {
             res.status(409).send(error(Object.keys(err.keyValue) + " is invalid or already used"))
@@ -55,7 +56,7 @@ adminrouter.post('/auth/create', requestlimiter, jsonLimiter, validateRequestBod
     }
 })
 
-adminrouter.post('/auth/login', requestlimiter,  jsonLimiter, validateRequestBodySize, async (req, res) => {
+adminrouter.post('/auth/login', requestlimiter, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
     if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
@@ -95,8 +96,9 @@ adminrouter.post('/auth/login', requestlimiter,  jsonLimiter, validateRequestBod
         }
 
         const token = admin.token;
+        const screen = 'Admin'
 
-        return res.status(200).json(success('Successfully logged in', token));
+        return res.status(200).json(success('Successfully logged in', token, { email: admin.email }, { username: admin.username }, { contact: admin.contact }, { userType: admin.userType }, { screen: screen }));
     } catch (err) {
         console.log(err);
 
@@ -175,10 +177,25 @@ adminrouter.get('/getalluser', requestlimiter, jwtAuth, jsonLimiter, validateReq
     if (!admin) { return res.status(404).send(error("Admin not found.")); }
     try {
         const users = await User.find({})
-        if (!users) { return res.status(404).send(error("Users not found.")); }
+        const admin = await Admin.find({})
+        let allUsers = [];
+
+        if (users.length === 0 && admin.length === 0) {
+            allUsers = [];
+        } else if (users.length === 0) {
+            allUsers = admin;
+        } else if (admin.length === 0) {
+            allUsers = users;
+        } else {
+            allUsers = [...users, ...admin];
+        }
+
+        if (allUsers.length === 0) {
+            return res.status(404).send(error("Users not found."));
+        }
         return res.status(200).send({
             "message": "All users load successfully",
-            "users": users,
+            "users": allUsers,
             "status": "true",
             "statuscode": 200,
             "timestamp": new Date().toLocaleString(),
@@ -193,7 +210,7 @@ adminrouter.get('/getalluser', requestlimiter, jwtAuth, jsonLimiter, validateReq
 adminrouter.put('/updateuser', requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
     const secretKey = req.headers["x-secret-key"];
-    if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+    if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
         console.error("Invalid secret key:", secretKey);
         return res.status(401).send(error("Unauthorized."));
     }

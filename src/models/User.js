@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         unique: false,
         required: false,
-        default:'Public'
+        default:'Student'
     },
     paid: {
         type: String,

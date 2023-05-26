@@ -11,11 +11,18 @@ const AdminSchema = new mongoose.Schema({
         minlength: [5, "Email is invalid."],
         maxlength: 50,
     },
+
     password: {
         type: String,
         unique: false,
         required: true,
         minlength: [8, "Password Length must be 8 minimum."],
+    },
+    userType: {
+        type: String,
+        unique: false,
+        required: false,
+        default:'Admin'
     },
     username: {
         type: String,

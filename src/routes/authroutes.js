@@ -30,8 +30,10 @@ router.post("/signup",requestlimiter,jsonLimiter,validateRequestBodySize, async 
     const user = new User({ email, password, username, contact })
     const tokenKey = jwt.sign({ userID: user._id }, jwtKey)
     user.token = tokenKey
+    const screen='Public'
+
     await user.save();
-    res.status(200).send(success("User saved successfully", tokenKey))
+    res.status(200).send(success("User saved successfully", tokenKey,{screen : screen}))
   } catch (err) {
     if (err.keyValue) {
       res.status(401).send(error(Object.keys(err.keyValue) + " is invalid or already used"))
@@ -84,7 +86,9 @@ router.post("/signin",requestlimiter,jsonLimiter,validateRequestBodySize, async 
     else {
       screenName = 'Public'
     }
-    res.status(200).send(success('Successfully logged in', token, screenName))
+    // res.status(200).send(success('Successfully logged in', token, screenName,user.username,user.email,user.contact))
+    res.status(200).send(success('Successfully logged in', user.token,{email:user.email},{username: user.username}, {contact:user.contact}, {userType:user.userType}, {screen : screenName}))
+
   } catch (err) {
     console.log("error in catch",err);
     return res.status(401).send(error("Password or Email/ Username not matched. "))
