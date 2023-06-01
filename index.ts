@@ -17,7 +17,9 @@ const contentrouter=require('./src/routes/contentroute')
 const categoryrouter= require('./src/routes/categoryRoute')
 const adminrouter=require('./src/routes/adminroute')
 // const linkrouter=require("./scrapper")
-app.use(bodyParser.json())
+// app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use("/contents",contentrouter)
 app.use("/auth",router)
 app.use('/category',categoryrouter)

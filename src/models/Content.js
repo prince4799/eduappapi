@@ -9,10 +9,9 @@ const Content = new Schema({
         required: [true, "Please enter the link"],
     },
     thumbnail: {
-        type: String,
-        unique: false,
+        type: Buffer,
         required: true,
-    },
+      },
     title: {
         type: String,
         unique: [true, "Please enter different title."],
