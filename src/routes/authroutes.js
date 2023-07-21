@@ -14,7 +14,8 @@ const requestlimiter = require("../middleware/requestLimiter");
 const router = express.Router();
 const User = mongoose.model('User');
 
-const passportSetup = require('../models/GoogleAuth')
+const passportSetup = require('../models/GoogleAuth');
+const { sqlDb } = require('../confidential/sqlConnetion');
 
 
 const TAG = '/signuproute'
@@ -34,6 +35,20 @@ router.post("/signup",requestlimiter,jsonLimiter,validateRequestBodySize, async 
 
     await user.save();
     res.status(200).send(success("User saved successfully", tokenKey,{screen : screen}))
+    console.log("ready to create table");
+    const addUserQuery = `
+    INSERT INTO history (username, data)
+    VALUES (?, NULL)
+  `;
+  
+  sqlDb.query(addUserQuery, [username], (err, result) => {
+    if (err) {
+      console.error("Error adding user to db4free:", err);
+      return;
+    }
+    console.log("User added successfully to db4free");
+  });
+  
   } catch (err) {
     if (err.keyValue) {
       res.status(401).send(error(Object.keys(err.keyValue) + " is invalid or already used"))

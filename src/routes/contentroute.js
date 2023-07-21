@@ -13,9 +13,9 @@ const fs = require('fs');
 const headerSecretKey = process.env.HEADER_SECRET_KEY;
 mongoose.model('Contents')
 
-contentrouter.post("/upload",jwtAuth,uploadMiddleware, handleUpload , async (req, res) => {
+contentrouter.post("/upload", jwtAuth, uploadMiddleware, handleUpload, async (req, res) => {
 
-  const expectedKeys = ["title", "videolink","category"];
+  const expectedKeys = ["title", "videolink", "category"];
   const bodyKeys = Object.keys(req.body);
 
   //crated my secret key to check if valid user can access my data base
@@ -24,7 +24,7 @@ contentrouter.post("/upload",jwtAuth,uploadMiddleware, handleUpload , async (req
     return res.status(401).send(error("Unauthorized."));
   }
 
-  if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("title") || !bodyKeys.includes("videolink") || !bodyKeys.includes("category") ) {
+  if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("title") || !bodyKeys.includes("videolink") || !bodyKeys.includes("category")) {
     return res.status(400).send(error("Invalid fields."))
   }
   const { videolink, title, category } = req.body;
@@ -32,23 +32,32 @@ contentrouter.post("/upload",jwtAuth,uploadMiddleware, handleUpload , async (req
   const thumbnailPath = req.thumbnailPath; // Get the path of the saved file
   const thumbnailBuffer = fs.readFileSync(thumbnailPath); // Read the file data from the saved file
 
-  var lengthofbody=Object.keys(bodyKeys).length
+  var lengthofbody = Object.keys(bodyKeys).length
   if (!req.body || lengthofbody < 3 || !videolink || !title || !category) {
     return res.status(400).send(error("unable to generate link as fields are empty"))
   }
-  console.log("videolink, title, category ",videolink, title, category, req.file );
+  console.log("videolink, title, category ", videolink, title, category, req.file);
   try {
     // const shortlink = await createPermanentLink(videolink)
     const shortlink = videolink;
-    
+
     if (!shortlink) {
       return res.status(400).send(error("unable to generate link may be link is invalid"))
     }
     const permanentLink = 'https://gdurl.com' + shortlink;
-    const videos = new Contents({ videolink: shortlink, thumbnail:thumbnailBuffer, title, category })
-    
+    // const videos = new Contents({ videolink: shortlink, thumbnail: thumbnailBuffer, title, category })
+    const videos = new Contents({
+      videolink: videolink.trimEnd(),
+      thumbnail: thumbnailBuffer,
+      title: title.trimEnd(),
+      category: category.trimEnd()
+    });
+
     await videos.save();
-    res.status(200).send(contentsuccess("Video saved successfully", { videolink: shortlink, thumbnailPath, title ,category }))
+    const deletion=await fs.promises.unlink(thumbnailPath);
+    console.log('Image file deleted successfully',deletion);
+    
+    res.status(200).send(contentsuccess("Video saved successfully", { videolink: shortlink, thumbnailPath, title, category }))
   } catch (err) {
     if (err.keyValue) {
       res.status(400).send(error({ "message": Object.keys(err.keyValue) + " is invalid" }))
@@ -80,48 +89,20 @@ contentrouter.get("/load", jwtAuth, async (req, res) => {
     console.log("error in catch", err.message, err);
   }
 })
-
-contentrouter.get("/load/search/:name", jwtAuth, async (req, res) => {
-  const expectedKeys = ["title"];
-  const bodyKeys = Object.keys(req.body);
-
-  if (bodyKeys.length !== expectedKeys.length || !bodyKeys.includes("title")) {
-    return res.status(401).send(error("Invalid fields."))
-  }
-
-  const lengthofbody = req.body.title.replace(/\s/g, '').length
-  if (!lengthofbody) {
-    return res.status(401).send(error("Fields can't be empty."))
-  }
-
-  try {
-    const contents = await Contents.find({ title: { $regex: req.body.title, $options: 'i' } })
-      .lean();
-    if (contents.length > 0) {
-      res.status(200).send(contentsuccess("Video loaded successfully", { contents }))
-    }
-    else {
-      res.status(400).send(error("The content you are looking for is not available"))
-    }
-  } catch (err) {
-    console.log("error in catch", err.message, err);
-    res.status(500).send(error("Server error"))
-  }
-})
-
-contentrouter.put("/update", jwtAuth,async (req, res) => {
+ 
+contentrouter.put("/update", jwtAuth, async (req, res) => {
   const secretKey = req.headers["x-secret-key"];
   if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
     return res.status(401).send(error("Unauthorized."));
   }
   const expectedKeys = ["title", "videolink", "thumbnail", "category", "newtitle"];
   const bodyKeys = Object.keys(req.body);
-  
+
   // if (!expectedKeys.every(key => bodyKeys.includes(key))) {
   //   return res.status(401).send(error("Invalid fields."));
   // }
 
-  if(expectedKeys.length>5){
+  if (expectedKeys.length > 5) {
     return res.status(401).send(error("Invalid fields."));
   }
   const { videolink, thumbnail, title, category, newtitle } = req.body;
@@ -138,19 +119,19 @@ contentrouter.put("/update", jwtAuth,async (req, res) => {
         return res.status(401).send(error("Unable to generate link may be link is invalid."))
       }
       const permanentLink = 'https://gdurl.com' + shortlink;
-      video.videolink = permanentLink;
+      video.videolink = permanentLink.trimEnd();
     }
 
     if (thumbnail && validlength(thumbnail)) {
-      video.thumbnail = thumbnail;
+      video.thumbnail = thumbnail.trimEnd(); // thumbnailBuffer should be implemented here
     }
 
     if (newtitle && validlength(newtitle)) {
-      video.title = newtitle;
+      video.title = newtitle.trimEnd();
     }
 
     if (category && validlength(category)) {
-      video.category = category;
+      video.category = category.trimEnd();
     }
 
     await video.save();
@@ -166,15 +147,16 @@ contentrouter.put("/update", jwtAuth,async (req, res) => {
   }
 });
 
-contentrouter.delete("/delete",jwtAuth, async (req, res) => {
+contentrouter.delete("/delete", jwtAuth, async (req, res) => {
   const secretKey = req.headers["x-secret-key"];
-  if (!secretKey || secretKey !== headerSecretKey) { //if secret key then only it can be uploaded
+  // thumbanail jpg should be deleted from the upload folder.......to implement 
+  if (!secretKey || secretKey !== '#heyram@') { //if secret key then only it can be uploaded
     return res.status(401).send(error("Unauthorized."));
   }
   const title = req.body.title;
-  const expectedKeys=["title"]
-  const bodyKeys=Object.keys(req.body)
-  if(expectedKeys.length!=bodyKeys.length || !validlength(title) || !req.body){
+  const expectedKeys = ["title"]
+  const bodyKeys = Object.keys(req.body)
+  if (expectedKeys.length != bodyKeys.length || !validlength(title) || !req.body) {
     return res.status(404).send(error("Invalid input."));
   }
   try {
@@ -188,6 +170,78 @@ contentrouter.delete("/delete",jwtAuth, async (req, res) => {
     res.status(500).send(error("Internal server error."));
   }
 });
+/*  
+contentrouter.get("/load/search/", jwtAuth, async (req, res) => {
+  // const expectedKeys = ["category"||"title" ];
+  const bodyKeys = Object.keys(req.body);
+  const actualBody=(req.body.hasOwnProperty('title')||req.body.hasOwnProperty('category'))
+
+  console.log("actualBody",actualBody)
+
+  if (!actualBody||!bodyKeys.length===1 &&( !bodyKeys.includes("title")|| !bodyKeys.includes("category"))) {
+    return res.status(401).send(error("Invalid fields."))
+  }
+  
+  const lengthofbody =bodyKeys.includes("title")? req.body.title.replace(/\s/g, '').length :bodyKeys.includes("category")? req.body.category.replace(/\s/g, '').length:null
+  if (!lengthofbody) {
+    return res.status(401).send(error("Fields can't be empty."))
+  }
+
+  try {
+    let contents=''
+    if(bodyKeys.includes("title")){
+      contents = await Contents.find({ title: { $regex: req.body.title, $options: 'i' } }).lean();
+    }
+    if(bodyKeys.includes("category")){
+      contents = await Contents.find({ category: { $regex: req.body.category, $options: 'i' } }).lean();
+    }
+    if (contents.length > 0) {
+      res.status(200).send(contentsuccess("Video loaded successfully", { contents }))
+    }
+    else {
+      res.status(400).send(error("The content you are looking for is not available"))
+    }
+  } catch (err) {
+    console.log("error in catch", err.message, err);
+    res.status(500).send(error("Server error"))
+  }
+})
+*/
+contentrouter.post("/load/search/", jwtAuth, async (req, res) => {
+  const bodyKeys = Object.keys(req.body);
+  const actualBody=(req.body.hasOwnProperty('title')||req.body.hasOwnProperty('category'))
+
+  console.log("actualBody",actualBody)
+
+  if (!actualBody||!bodyKeys.length===1 &&( !bodyKeys.includes("title")|| !bodyKeys.includes("category"))) {
+    return res.status(401).send(error("Invalid fields."))
+  }
+  
+  const lengthofbody =bodyKeys.includes("title")? req.body.title.replace(/\s/g, '').length :bodyKeys.includes("category")? req.body.category.replace(/\s/g, '').length:null
+  if (!lengthofbody) {
+    return res.status(401).send(error("Fields can't be empty."))
+  }
+
+  try {
+    let contents=''
+    if(bodyKeys.includes("title")){
+      contents = await Contents.find({ title: { $regex: req.body.title, $options: 'i' } }).lean();
+    }
+    if(bodyKeys.includes("category")){
+      contents = await Contents.find({ category: { $regex: req.body.category, $options: 'i' } }).lean();
+    }
+    if (contents.length > 0) {
+      res.status(200).send(contentsuccess("Video loaded successfully", { contents }))
+    }
+    else {
+      res.status(400).send(error("The content you are looking for is not available"))
+    }
+  } catch (err) {
+    console.log("error in catch", err.message, err);
+    res.status(500).send(error("Server error"))
+  }
+});
+
 
 module.exports = contentrouter
 
