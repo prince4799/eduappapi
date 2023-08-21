@@ -19,7 +19,7 @@ historyRoute.get("/", (req, res, next) => {
 })
 
 
-historyRoute.get("/show/lastactivities", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
+historyRoute.post("/show/lastactivities", requestlimiter, jwtAuth, jsonLimiter, validateRequestBodySize, async (req, res) => {
 
   const bodyKeys = Object.keys(req.body)
   const expectedKeys = ["userid"]
@@ -41,6 +41,10 @@ historyRoute.get("/show/lastactivities", requestlimiter, jwtAuth, jsonLimiter, v
         return res.status(401).send(error(err))
       }
       const newData=JSON.parse(result[0].data)
+      if (!newData) {
+        console.error("Error in getting data from history:", err);
+        return res.status(200).send(contentsuccess("No data found",{}))
+      }
       const finalData=newData.map(item=>{
         return JSON.parse(item)
       })
@@ -50,7 +54,7 @@ historyRoute.get("/show/lastactivities", requestlimiter, jwtAuth, jsonLimiter, v
         username:result[0].username,
         data:finalData
       }
-      console.log("Data fetched ", newObj);
+      // console.log("Data fetched ", newObj);
       return res.status(200).send(contentsuccess("Data fetched successfully from history", newObj))
     });
 
@@ -80,7 +84,7 @@ historyRoute.put("/update/lastactivities", requestlimiter, jwtAuth, jsonLimiter,
 
   const newValue=JSON.stringify(value)
   if (!userid) {
-    return res.status(401).send(error('Email/Username is missing.'));
+    return res.status(400).send(error('Email/Username is missing.'));
   }
   const insertDataQuery = `
   UPDATE history

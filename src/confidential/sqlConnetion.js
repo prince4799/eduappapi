@@ -5,7 +5,7 @@ app.use(express.json());
 const mysql = require('mysql');
 const { success, error } = require('../utils/Constants');
 
-
+/*
 const con = mysql.createConnection({
   host: "sql6.freesqldatabase.com",
   database: "sql6633286",
@@ -14,7 +14,7 @@ const con = mysql.createConnection({
   port: 3306,
   connectTimeout: 0
 });
-
+*/
 const sqlDb = mysql.createConnection({
   host: "db4free.net",
   database: "history_edu_app",
@@ -24,6 +24,7 @@ const sqlDb = mysql.createConnection({
   connectTimeout: 0
 })
 // ==================================freesqldatabase===============================
+/*
 con.connect((err) => {
   if (err) {
     console.error("Error connecting to freesqldatabase MySQL:", err);
@@ -56,7 +57,7 @@ con.connect((err) => {
     }
   });
 })
-
+*/
 // ===================================db4free===========================
 sqlDb.connect((err) => {
   if (err) {
@@ -93,4 +94,6 @@ sqlDb.connect((err) => {
   });
 })
 
-module.exports = { con, sqlDb }
+module.exports = {  sqlDb }
+
+// module.exports = { con, sqlDb }
